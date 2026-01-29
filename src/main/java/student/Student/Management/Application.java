@@ -1,64 +1,59 @@
 package student.Student.Management;
 
+import org.apache.ibatis.annotations.Select;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication
 @RestController
 public class Application {
 
+	@Autowired
+	private StudentRepository repository;
 
-	private Map<String,Map<String,String>> studentInformation = new HashMap<>();
-
-	public Application(){
-		Map<String,String> student1 = new HashMap<>();
-		student1.put("name","Enami Kouji");
-		student1.put("age","37");
-
-		Map<String,String> student2 = new HashMap<>();
-		student2.put("name","Yamada Akira");
-		student2.put("age","25");
-
-		studentInformation.put("No.1",student1);
-		studentInformation.put("No.2",student2);
-
-	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@GetMapping("/studentInformation")
-	public String getStudentInformation(){
-		String result = "";
-
-		for (Map<String,String> student : studentInformation.values()){
-			result += student.get("name") + " " + student.get("age") + "歳\n";
-		}
-		return result;
-
+	//生徒のデータ取得
+	@GetMapping("/students")
+	public List<Student> getAllStudent(){
+		return repository.findAll();
 	}
 
-	@PostMapping("/studentInformation")
-	public String addStudent(
-			@RequestParam String id,
-			@RequestParam String name,
-			@RequestParam String age
-	){
-		Map<String, String> student = new HashMap<>();
-		student.put("name",name);
-		student.put("age",age);
 
-		studentInformation.put(id,student);
+	//生徒一人のデータ取得
+	@GetMapping("/student")
+	public String getStudent(@RequestParam String name){
+		Student student = repository.searchByName(name);
+		return student.getName() + " " +student.getAge() + "歳";
+	}
 
-		return "追加しました: " + name + " " + age + "歳";
+	//生徒一人のデータ登録
+	@PostMapping("/student")
+	public void registerStudent(
+			String name,
+			int age){
+		repository.registerStudent(name,age);
+	}
+
+	//生徒一人のデータ更新
+	@PatchMapping("/student")
+	public void updateStudentAge(String name, int age){
+		repository.updateStudent(name, age);
+	}
+
+	//生徒一人のデータ削除
+	@DeleteMapping("/student")
+	public void deleteStudent(String name){
+		repository.deleteStudent(name);
 	}
 
 }
